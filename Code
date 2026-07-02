@@ -1,0 +1,62 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+const int lm35Pin = A0;
+const int greenLED = 2;
+const int yellowLED = 3;
+const int redLED = 4;
+const int buzzer = 5;
+
+void setup() {
+  Serial.begin(9600);
+
+  lcd.init();
+  lcd.backlight();
+
+  pinMode(greenLED, OUTPUT);
+  pinMode(yellowLED, OUTPUT);
+  pinMode(redLED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+}
+
+void loop() {
+  int sensorValue = analogRead(lm35Pin);
+
+  float voltage = sensorValue * (5.0 / 1023.0);
+  float temperature = voltage * 100.0;
+
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C");
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Temp:");
+  lcd.print(temperature, 1);
+  lcd.print("C");
+
+  digitalWrite(greenLED, LOW);
+  digitalWrite(yellowLED, LOW);
+  digitalWrite(redLED, LOW);
+  digitalWrite(buzzer, LOW);
+
+  lcd.setCursor(0, 1);
+
+  if (temperature < 25) {
+    lcd.print("Status:COLD");
+    digitalWrite(greenLED, HIGH);
+  }
+  else if (temperature <= 35) {
+    lcd.print("Status:IDEAL");
+    digitalWrite(yellowLED, HIGH);
+  }
+  else {
+    lcd.print("Status:HOT");
+    digitalWrite(redLED, HIGH);
+    digitalWrite(buzzer, HIGH);
+  }
+
+  delay(1000);
+}
